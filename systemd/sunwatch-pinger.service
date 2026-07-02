@@ -1,0 +1,15 @@
+[Unit]
+Description=sunwatch pinger
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/projects/sunwatch
+ExecStart=/usr/bin/node src/pinger.js
+Restart=always
+RestartSec=5
+Environment="SUNWATCH_DB=/home/deploy/projects/sunwatch/db/sunwatch.db"
+
+[Install]
+WantedBy=multi-user.target

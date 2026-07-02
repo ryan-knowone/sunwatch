@@ -1,0 +1,18 @@
+[Unit]
+Description=sunwatch web server
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+WorkingDirectory=/home/deploy/projects/sunwatch
+ExecStart=/usr/bin/node src/server.js
+Restart=always
+RestartSec=5
+Environment="PORT=3001"
+Environment="SUNWATCH_DB=/home/deploy/projects/sunwatch/db/sunwatch.db"
+Environment="RECEIVING_WALLET=0x1e2D7F8715E8180816c0236A5c4F21596C5b9c9e"
+Environment="BASE_RPC=https://mainnet.base.org"
+
+[Install]
+WantedBy=multi-user.target

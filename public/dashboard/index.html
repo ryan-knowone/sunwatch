@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>sunwatch — uptime alerts</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, sans-serif; max-width: 720px; margin: 2rem auto; padding: 0 1rem; }
+    h1 { font-size: 1.5rem; }
+    form { display: grid; gap: .75rem; margin: 1.5rem 0; }
+    label { font-weight: 600; }
+    input, select, button { padding: .5rem; font: inherit; }
+    table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+    th, td { text-align: left; padding: .5rem; border-bottom: 1px solid #8885; }
+    .state { font-weight: 700; text-transform: uppercase; font-size: .8rem; }
+    .pending { color: #f59e0b; }
+    .active { color: #10b981; }
+    .down { color: #ef4444; }
+    pre { background: #f3f4f6; padding: 1rem; overflow-x: auto; }
+  </style>
+</head>
+<body>
+  <h1>sunwatch</h1>
+  <p>Crypto-paid uptime monitoring. $3/monitor/month. Pay on Base.</p>
+
+  <form id="create">
+    <label>URL to monitor</label>
+    <input type="url" name="url" placeholder="https://example.com" required>
+
+    <label>Webhook URL for down/up alerts</label>
+    <input type="url" name="webhook_url" placeholder="https://discord.com/api/webhooks/...">
+
+    <label>Check interval</label>
+    <select name="interval_sec">
+      <option value="60">1 minute</option>
+      <option value="300" selected>5 minutes</option>
+      <option value="900">15 minutes</option>
+    </select>
+
+    <label>Expected HTTP status</label>
+    <input type="number" name="expected_status" value="200">
+
+    <button type="submit">Create monitor</button>
+  </form>
+
+  <div id="payment" style="display:none;">
+    <h2>Payment required</h2>
+    <p>Send exactly <strong id="amount"></strong> USDC on Base to:</p>
+    <pre id="address"></pre>
+    <p>Monitor ID: <code id="monitorId"></code></p>
+    <button id="activate">I have paid — activate</button>
+  </div>
+
+  <h2>Monitors</h2>
+  <table id="monitors">
+    <thead>
+      <tr><th>ID</th><th>URL</th><th>State</th><th>Interval</th><th>Payment</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function load() {
+      const res = await fetch('/api/monitors');
+      const data = await res.json();
+      const tbody = document.querySelector('#monitors tbody');
+      tbody.innerHTML = data.map(m => `
+        <tr>
+          <td>${m.id}</td>
+          <td><a href="${m.url}" target="_blank">${m.url}</a></td>
+          <td class="state ${m.state}">${m.state}</td>
+          <td>${m.interval_sec}s</td>
+          <td>${m.payment_amount || '-'} ${m.payment_currency || ''}</td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('create').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const body = {
+        url: form.url.value,
+        webhook_url: form.webhook_url.value,
+        interval_sec: Number(form.interval_sec.value),
+        expected_status: Number(form.expected_status.value),
+      };
+      const res = await fetch('/api/monitors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (data.monitor) {
+        document.getElementById('payment').style.display = 'block';
+        document.getElementById('amount').textContent = data.paymentAmount;
+        document.getElementById('address').textContent = data.receivingWallet;
+        document.getElementById('monitorId').textContent = data.monitor.id;
+        load();
+      }
+    });
+
+    document.getElementById('activate').addEventListener('click', async () => {
+      const id = document.getElementById('monitorId').textContent;
+      const res = await fetch(`/api/monitors/${id}/check-payment`, { method: 'POST' });
+      const data = await res.json();
+      if (data.paid) {
+        document.getElementById('payment').style.display = 'none';
+        load();
+      } else {
+        alert('Payment not found on-chain yet. If you just sent it, wait a minute and try again.');
+      }
+    });
+
+    load();
+  </script>
+</body>
+</html>
