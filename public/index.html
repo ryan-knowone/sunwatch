@@ -3,8 +3,48 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>sunwatch — crypto-paid uptime monitoring</title>
-  <meta name="description" content="Uptime monitoring for developers. Pay with USDC on Base. Get instant webhook alerts when your site goes down or comes back up.">
+  <title>sunwatch — no-KYC uptime monitor with webhook alerts (USDC on Base)</title>
+  <meta name="description" content="Free uptime monitor with webhook alerts. No KYC, no subscription. Start with 3 monitors, then pay $1/monitor/month with USDC on Base.">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Is sunwatch a free uptime monitor?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "Yes. You can create up to 3 uptime monitors for free with 1-minute checks and webhook alerts. Extra monitors cost $1 per monitor per month, paid with USDC on Base."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "Does sunwatch require KYC or an account?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "No. sunwatch does not require identity verification, KYC, or even an email address. Just add a URL and webhook, and your monitors start immediately."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "How do webhook alerts work?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "When a monitored site changes state from up to down or down to up, sunwatch sends a JSON payload to the webhook URL you provided. You can route alerts to Slack, Discord, PagerDuty, or any HTTP endpoint."
+        }
+      },
+      {
+        "@type": "Question",
+        "name": "What crypto does sunwatch accept?",
+        "acceptedAnswer": {
+          "@type": "Answer",
+          "text": "sunwatch uses Base Pay, so you pay with USDC on the Base network. Payments are wallet-to-wallet with no subscription lock-in."
+        }
+      }
+    ]
+  }
+  </script>
   <style>
     :root {
       color-scheme: light dark;
@@ -173,6 +213,7 @@
     <nav>
       <a href="#how">How it works</a>
       <a href="#pricing">Pricing</a>
+      <a href="#faq">FAQ</a>
       <a href="/dashboard">Dashboard</a>
     </nav>
   </header>
@@ -232,6 +273,26 @@
     <h2>Ready when you are.</h2>
     <p style="color: var(--muted); margin-bottom: 1.5rem;">Live dashboard is open. Create a monitor, send USDC on Base, and watch it activate.</p>
     <a class="cta" href="/dashboard">Open dashboard</a>
+  </section>
+
+  <section class="faq" id="faq" style="padding: 3rem 1.5rem; max-width: 720px;">
+    <h2 style="text-align: center; font-size: 1.75rem; margin-bottom: 2rem;">Frequently asked questions</h2>
+    <div class="faq-item" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: .4rem;">Is sunwatch a free uptime monitor?</h3>
+      <p style="color: var(--muted); margin: 0;">Yes — start with 3 monitors at no cost, with 1-minute checks and webhook alerts. Extra monitors are $1/monitor/month.</p>
+    </div>
+    <div class="faq-item" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: .4rem;">Do I need an account or KYC?</h3>
+      <p style="color: var(--muted); margin: 0;">No account, no email, no identity verification. Add a URL and webhook and you're monitoring in seconds.</p>
+    </div>
+    <div class="faq-item" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: .4rem;">How do webhook alerts work?</h3>
+      <p style="color: var(--muted); margin: 0;">When your site's state changes, sunwatch POSTs a JSON payload to your webhook. Route it to Slack, Discord, PagerDuty, or any endpoint you control.</p>
+    </div>
+    <div class="faq-item" style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1.1rem; margin-bottom: .4rem;">What crypto does sunwatch accept?</h3>
+      <p style="color: var(--muted); margin: 0;">Payments are handled with Base Pay using USDC on Base. No subscription lock-in — pay only for the monitors you want.</p>
+    </div>
   </section>
 
   <footer>
