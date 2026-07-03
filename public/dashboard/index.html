@@ -18,11 +18,19 @@
     .active { color: #10b981; }
     .down { color: #ef4444; }
     pre { background: #f3f4f6; padding: 1rem; overflow-x: auto; }
+    .badge { display: inline-block; padding: .15rem .4rem; border-radius: .25rem; font-size: .75rem; font-weight: 700; }
+    .badge.free { background: #10b981; color: #fff; }
+    .badge.paid { background: #f59e0b; color: #000; }
+    .usage { color: #666; margin-bottom: .5rem; }
+    .wallet-btn { display: inline-block; background: #3b82f6; color: #fff; padding: .75rem 1.25rem; border-radius: .5rem; text-decoration: none; font-weight: 700; margin: .5rem 0; }
+    .qr { margin: 1rem 0; }
+    .fallback { color: #666; font-size: .9rem; }
   </style>
 </head>
 <body>
   <h1>sunwatch</h1>
-  <p>Crypto-paid uptime monitoring. $3/monitor/month. Pay on Base.</p>
+  <p>Crypto-paid uptime monitoring. 3 free monitors, then $1/monitor/month. Pay on Base.</p>
+  <p class="usage" id="usage">Loading usage…</p>
 
   <form id="create">
     <label>URL to monitor</label>
@@ -45,33 +53,64 @@
   </form>
 
   <div id="payment" style="display:none;">
-    <h2>Payment required</h2>
-    <p>Send exactly <strong id="amount"></strong> USDC on Base to:</p>
-    <pre id="address"></pre>
-    <p>Monitor ID: <code id="monitorId"></code></p>
-    <button id="activate">I have paid — activate</button>
+    <div id="free-message" style="display:none;">
+      <h2>Monitor activated on the free tier.</h2>
+      <p>Your monitor is active and being checked.</p>
+    </div>
+    <div id="paid-ui" style="display:none;">
+      <h2>Payment required</h2>
+      <p>Pay $1 with your wallet to activate this monitor.</p>
+      <a id="wallet-link" class="wallet-btn" href="#" target="_blank">Pay $1 with wallet</a>
+      <div class="qr">
+        <img id="qr-img" src="" alt="Payment QR code" width="200" height="200">
+      </div>
+      <p class="fallback">Or send 1.00 USDC on Base to <strong id="fallback-address"></strong></p>
+      <p>Monitor ID: <code id="monitorId"></code></p>
+      <button id="activate">I have paid — activate</button>
+    </div>
   </div>
 
   <h2>Monitors</h2>
   <table id="monitors">
     <thead>
-      <tr><th>ID</th><th>URL</th><th>State</th><th>Interval</th><th>Payment</th></tr>
+      <tr><th>ID</th><th>URL</th><th>State</th><th>Interval</th><th>Tier</th></tr>
     </thead>
     <tbody></tbody>
   </table>
 
   <script>
+    let config = {};
+
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/config');
+        config = await res.json();
+      } catch (err) {
+        console.error('failed to load config', err);
+      }
+    }
+
+    function tierBadge(m) {
+      if (m.is_free) {
+        return '<span class="badge free">FREE</span>';
+      }
+      return '<span class="badge paid">$1/mo</span>';
+    }
+
     async function load() {
       const res = await fetch('/api/monitors');
       const data = await res.json();
+      const freeUsed = data.filter(m => m.state === 'active' || m.state === 'down').length;
+      document.getElementById('usage').textContent = `${freeUsed} of ${config.freeTier?.maxActive || 3} free monitors used`;
+
       const tbody = document.querySelector('#monitors tbody');
       tbody.innerHTML = data.map(m => `
         <tr>
           <td>${m.id}</td>
           <td><a href="${m.url}" target="_blank">${m.url}</a></td>
-          <td class="state ${m.state}">${m.state}</td>
+          <td><span class="state ${m.state}">${m.state}</span></td>
           <td>${m.interval_sec}s</td>
-          <td>${m.payment_amount || '-'} ${m.payment_currency || ''}</td>
+          <td>${tierBadge(m)}</td>
         </tr>
       `).join('');
     }
@@ -88,10 +127,20 @@
       const res = await fetch('/api/monitors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (data.monitor) {
-        document.getElementById('payment').style.display = 'block';
-        document.getElementById('amount').textContent = data.paymentAmount;
-        document.getElementById('address').textContent = data.receivingWallet;
-        document.getElementById('monitorId').textContent = data.monitor.id;
+        const paymentDiv = document.getElementById('payment');
+        paymentDiv.style.display = 'block';
+        if (data.isFree) {
+          document.getElementById('free-message').style.display = 'block';
+          document.getElementById('paid-ui').style.display = 'none';
+        } else {
+          document.getElementById('free-message').style.display = 'none';
+          document.getElementById('paid-ui').style.display = 'block';
+          const eip681 = data.paymentLink;
+          document.getElementById('wallet-link').href = eip681;
+          document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(eip681)}`;
+          document.getElementById('fallback-address').textContent = config.receivingWallet || data.monitor.payment_address || '';
+          document.getElementById('monitorId').textContent = data.monitor.id;
+        }
         load();
       }
     });
@@ -108,7 +157,7 @@
       }
     });
 
-    load();
+    loadConfig().then(load);
   </script>
 </body>
 </html>

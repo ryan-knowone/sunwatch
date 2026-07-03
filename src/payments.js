@@ -20,7 +20,7 @@ const client = createPublicClient({
 function pendingMonitors() {
   const db = getDb();
   return db
-    .prepare("SELECT * FROM monitors WHERE state = 'pending' AND payment_amount IS NOT NULL AND payment_currency = 'USDC'")
+    .prepare("SELECT * FROM monitors WHERE state = 'pending' AND payment_amount = '1.00' AND payment_currency = 'USDC' ORDER BY id ASC")
     .all();
 }
 
@@ -45,11 +45,14 @@ function tryActivateMonitor(log, pending) {
   if (!rawAmount) return null;
 
   const humanAmount = formatUnits(rawAmount, 6);
-  const monitor = pending.find((m) => m.payment_amount === humanAmount);
-  if (!monitor) return null;
+  if (humanAmount !== '1.00') return null;
 
   const exists = db.prepare('SELECT 1 FROM payments WHERE tx_hash = ?').get(log.transactionHash);
   if (exists) return null;
+
+  // Pick the oldest pending monitor requiring $1.00.
+  const monitor = pending.length > 0 ? pending[0] : null;
+  if (!monitor) return null;
 
   const nowSec = Math.floor(Date.now() / 1000);
   const paidUntil = nowSec + 30 * 24 * 60 * 60;
