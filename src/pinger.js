@@ -1,7 +1,15 @@
 const cron = require('node-cron');
-const { getDb } = require('./db');
+const path = require('path');
+const Database = require('better-sqlite3');
 
-async function pingMonitor(monitor) {
+function getFreshDb() {
+  const dbPath = process.env.SUNWATCH_DB || path.join(__dirname, '..', 'db', 'sunwatch.db');
+  const db = new Database(dbPath);
+  db.pragma('journal_mode = WAL');
+  return db;
+}
+
+async function pingMonitor(monitor, db) {
   const start = Date.now();
   let statusCode = null;
   let up = false;
@@ -29,7 +37,6 @@ async function pingMonitor(monitor) {
 
   const responseMs = Date.now() - start;
 
-  const db = getDb();
   db.prepare(
     'INSERT INTO checks (monitor_id, status_code, response_ms, up, checked_at) VALUES (?, ?, ?, ?, ?)'
   ).run(monitor.id, statusCode, responseMs, up ? 1 : 0, Math.floor(Date.now() / 1000));
@@ -71,15 +78,19 @@ async function dispatchWebhook(monitor, up, details) {
 }
 
 async function tick() {
-  const db = getDb();
-  const monitors = db.prepare('SELECT * FROM monitors WHERE state IN (?, ?)').all('active', 'down');
-  console.log(`[pinger] tick: ${monitors.length} monitors`);
-  for (const m of monitors) {
-    try {
-      await pingMonitor(m);
-    } catch (err) {
-      console.error(`[pinger] monitor ${m.id} error:`, err);
+  const db = getFreshDb();
+  try {
+    const monitors = db.prepare('SELECT * FROM monitors WHERE state IN (?, ?)').all('active', 'down');
+    console.log(`[pinger] tick: ${monitors.length} monitors`);
+    for (const m of monitors) {
+      try {
+        await pingMonitor(m, db);
+      } catch (err) {
+        console.error(`[pinger] monitor ${m.id} error:`, err);
+      }
     }
+  } finally {
+    db.close();
   }
 }
 
