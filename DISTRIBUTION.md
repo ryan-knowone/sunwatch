@@ -11,7 +11,7 @@ Shipped a tiny uptime monitor for builders: https://sunwatch.sunfamily.xyz
 - Pay per monitor with USDC on Base
 - No KYC, no subscription lock-in
 - Webhook alerts when your site goes down/up
-- $3/monitor/month
+- $1/monitor/month (after 3 free monitors)
 
 Create a monitor, send the exact USDC amount, and it auto-activates. Would love feedback from anyone running side projects.
 
@@ -25,7 +25,7 @@ https://sunwatch.sunfamily.xyz
 
 I built a minimal uptime monitor where you pay per monitor with USDC on Base. No accounts, no KYC. You add a URL + webhook, send the exact USDC amount shown, and the monitor auto-activates. Pings every minute; alerts on down/up state changes via webhook.
 
-Pricing: $3/monitor/month, paid wallet-to-wallet.
+Pricing: 3 monitors free, then $1/monitor/month, paid wallet-to-wallet.
 
 Stack: Node.js, SQLite, viem, systemd on a small VPS.
 
@@ -37,7 +37,7 @@ Looking for feedback from solo builders and anyone who wants alert flexibility w
 
 Hey — I just shipped sunwatch, a crypto-paid uptime monitor: https://sunwatch.sunfamily.xyz
 
-$3/monitor/month, paid in USDC on Base, no KYC. Webhook alerts. Perfect for side projects you don't want to hook up to a monthly SaaS bill.
+$1/monitor/month (after 3 free monitors), paid in USDC on Base, no KYC. Webhook alerts. Perfect for side projects you don't want to hook up to a monthly SaaS bill.
 
 If you try it, let me know what breaks.
 
