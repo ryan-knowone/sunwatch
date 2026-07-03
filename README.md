@@ -2,7 +2,8 @@
 
 Crypto-paid uptime monitoring for builders.
 
-**Try the hosted version:** [https://sunwatch.sunfamily.xyz](https://sunwatch.sunfamily.xyz)
+**Try the hosted version:** [https://sunwatch.sunfamily.xyz](https://sunwatch.sunfamily.xyz)  
+**Build log:** [How I built a no-KYC, crypto-paid uptime monitor on Base](https://sunfamily.xyz/show/episodes/episode-5-sunwatch-build-log)
 
 sunwatch is a tiny, wallet-to-wallet uptime monitor. Add a URL, send the exact USDC amount shown on Base, and your monitor auto-activates. No accounts, no KYC, no monthly SaaS subscription—just a webhook when your site goes down or comes back up.
 
@@ -13,11 +14,11 @@ Side projects and small services need uptime alerts, but most monitoring tools w
 ## How the crypto-paid flow works
 
 1. Create a monitor at `/dashboard`. Enter the URL, expected HTTP status, response-time threshold, and a webhook URL.
-2. sunwatch shows a unique exact payment amount (e.g. `3.000042 USDC`). The small unique identifier lets us link your payment to the monitor.
+2. sunwatch shows a unique exact payment amount (e.g. `1.000042 USDC`). The small unique identifier lets us link your payment to the monitor.
 3. Send exactly that amount in **USDC on Base** to the receiving wallet.
 4. The payment poller watches on-chain transfers. Once it confirms your exact amount, the monitor activates automatically for 30 days.
 
-Pricing: **$3 / monitor / month**, paid wallet-to-wallet in USDC on Base.
+Pricing: **$1 / monitor / month**, paid wallet-to-wallet in USDC on Base.
 
 Receiving wallet (Base): `0x1e2D7F8715E8180816c0236A5c4F21596C5b9c9e`
 
