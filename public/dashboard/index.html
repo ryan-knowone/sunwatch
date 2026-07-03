@@ -22,9 +22,29 @@
     .badge.free { background: #10b981; color: #fff; }
     .badge.paid { background: #f59e0b; color: #000; }
     .usage { color: #666; margin-bottom: .5rem; }
-    .wallet-btn { display: inline-block; background: #3b82f6; color: #fff; padding: .75rem 1.25rem; border-radius: .5rem; text-decoration: none; font-weight: 700; margin: .5rem 0; }
-    .qr { margin: 1rem 0; }
     .fallback { color: #666; font-size: .9rem; }
+    .base-pay-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      background: #0052FF;
+      color: #fff;
+      border: none;
+      padding: .85rem 1.5rem;
+      border-radius: .75rem;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: .5rem 0;
+    }
+    .base-pay-btn:hover { background: #0043d1; }
+    .base-pay-btn:disabled { opacity: .6; cursor: not-allowed; }
+    .base-pay-btn svg { width: 1.25rem; height: 1.25rem; }
+    .pay-status { margin: .75rem 0; font-weight: 500; }
+    .pay-status.success { color: #10b981; }
+    .pay-status.error { color: #ef4444; }
+    .pay-status.pending { color: #f59e0b; }
+    .manual-pay { margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid #8884; }
   </style>
 </head>
 <body>
@@ -59,14 +79,17 @@
     </div>
     <div id="paid-ui" style="display:none;">
       <h2>Payment required</h2>
-      <p>Pay $1 with your wallet to activate this monitor.</p>
-      <a id="wallet-link" class="wallet-btn" href="#" target="_blank">Pay $1 with wallet</a>
-      <div class="qr">
-        <img id="qr-img" src="" alt="Payment QR code" width="200" height="200">
+      <p>Activate this monitor for $1/mo with Base Pay.</p>
+      <button id="base-pay-btn" class="base-pay-btn" type="button">
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path fill="currentColor" d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32ZM15.1436 21.0896V19.0896H20.4096C21.0148 19.0896 21.5052 18.5992 21.5052 17.994V14.006C21.5052 13.4008 21.0148 12.9104 20.4096 12.9104H11.5904C10.9852 12.9104 10.4948 13.4008 10.4948 14.006V17.994C10.4948 18.5992 10.9852 19.0896 11.5904 19.0896H13.1436V21.0896H11.5904C9.88076 21.0896 8.49479 19.7036 8.49479 17.994V14.006C8.49479 12.2964 9.88076 10.9104 11.5904 10.9104H20.4096C22.1192 10.9104 23.5052 12.2964 23.5052 14.006V17.994C23.5052 19.7036 22.1192 21.0896 20.4096 21.0896H15.1436Z"/></svg>
+        Pay $1 with Base
+      </button>
+      <div id="pay-status" class="pay-status" style="display:none;"></div>
+      <div class="manual-pay">
+        <p class="fallback">Prefer your own wallet? Send 1.00 USDC on Base to <strong id="fallback-address"></strong></p>
+        <p>Monitor ID: <code id="monitorId"></code></p>
+        <button id="activate">I have paid — activate</button>
       </div>
-      <p class="fallback">Or send 1.00 USDC on Base to <strong id="fallback-address"></strong></p>
-      <p>Monitor ID: <code id="monitorId"></code></p>
-      <button id="activate">I have paid — activate</button>
     </div>
   </div>
 
@@ -78,8 +101,10 @@
     <tbody></tbody>
   </table>
 
+  <script src="/vendor/base-account.min.js"></script>
   <script>
     let config = {};
+    let currentMonitorId = null;
 
     async function loadConfig() {
       try {
@@ -115,6 +140,43 @@
       `).join('');
     }
 
+    function setPayStatus(text, type) {
+      const el = document.getElementById('pay-status');
+      el.textContent = text;
+      el.style.display = 'block';
+      el.className = 'pay-status ' + (type || '');
+    }
+
+    async function startBasePay() {
+      const btn = document.getElementById('base-pay-btn');
+      const treasury = config.receivingWallet;
+      if (!treasury) {
+        setPayStatus('Payment config not loaded. Refresh and try again.', 'error');
+        return;
+      }
+      if (!window.base || !window.base.pay) {
+        setPayStatus('Base Pay SDK not loaded. Refresh and try again.', 'error');
+        return;
+      }
+      btn.disabled = true;
+      setPayStatus('Opening Base Pay…', 'pending');
+      try {
+        const result = await window.base.pay({
+          amount: '1.00',
+          to: treasury,
+          testnet: false,
+          telemetry: false,
+        });
+        setPayStatus('Payment sent. Click “I have paid — activate” once it confirms on-chain.', 'success');
+        console.log('[base pay] payment result:', result);
+      } catch (err) {
+        console.error('[base pay] payment failed:', err);
+        setPayStatus(err?.message ? 'Payment failed: ' + err.message : 'Payment failed or was cancelled.', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
     document.getElementById('create').addEventListener('submit', async (e) => {
       e.preventDefault();
       const form = e.target;
@@ -127,17 +189,16 @@
       const res = await fetch('/api/monitors', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const data = await res.json();
       if (data.monitor) {
+        currentMonitorId = data.monitor.id;
         const paymentDiv = document.getElementById('payment');
         paymentDiv.style.display = 'block';
+        document.getElementById('pay-status').style.display = 'none';
         if (data.isFree) {
           document.getElementById('free-message').style.display = 'block';
           document.getElementById('paid-ui').style.display = 'none';
         } else {
           document.getElementById('free-message').style.display = 'none';
           document.getElementById('paid-ui').style.display = 'block';
-          const eip681 = data.paymentLink;
-          document.getElementById('wallet-link').href = eip681;
-          document.getElementById('qr-img').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(eip681)}`;
           document.getElementById('fallback-address').textContent = config.receivingWallet || data.monitor.payment_address || '';
           document.getElementById('monitorId').textContent = data.monitor.id;
         }
@@ -145,8 +206,10 @@
       }
     });
 
+    document.getElementById('base-pay-btn').addEventListener('click', startBasePay);
+
     document.getElementById('activate').addEventListener('click', async () => {
-      const id = document.getElementById('monitorId').textContent;
+      const id = currentMonitorId || document.getElementById('monitorId').textContent;
       const res = await fetch(`/api/monitors/${id}/check-payment`, { method: 'POST' });
       const data = await res.json();
       if (data.paid) {

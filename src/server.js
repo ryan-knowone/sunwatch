@@ -11,6 +11,9 @@ const USDC_BASE = '0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, '..', 'public')));
+app.get('/vendor/base-account.min.js', (_req, res) => {
+  res.sendFile(path.join(__dirname, '..', 'node_modules', '@base-org', 'account', 'dist', 'base-account.min.js'));
+});
 
 migrate();
 
