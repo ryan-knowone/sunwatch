@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service — sunwatch</title>
+  <meta name="description" content="sunwatch terms of service: provided as-is, no uptime guarantee, wallet-to-wallet USDC payments on Base.">
+  <link rel="canonical" href="https://sunwatch.sunfamily.xyz/terms.html">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #ffffff;
+      --fg: #111827;
+      --muted: #6b7280;
+      --accent: #f59e0b;
+      --accent-text: #111827;
+      --card: #f9fafb;
+      --border: #e5e7eb;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #0f172a;
+        --fg: #f8fafc;
+        --muted: #94a3b8;
+        --accent: #fbbf24;
+        --accent-text: #0f172a;
+        --card: #1e293b;
+        --border: #334155;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      margin: 0;
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+    }
+    header, main, footer {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 1.5rem;
+      padding-bottom: 1.5rem;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      text-decoration: none;
+      color: var(--fg);
+    }
+    .logo::before {
+      content: '☀';
+      color: var(--accent);
+    }
+    nav a {
+      color: var(--muted);
+      text-decoration: none;
+      margin-left: 1.25rem;
+      font-weight: 500;
+    }
+    nav a:hover { color: var(--fg); }
+    main {
+      padding-top: 2rem;
+      padding-bottom: 4rem;
+      max-width: 720px;
+    }
+    h1 {
+      font-size: clamp(1.75rem, 5vw, 2.5rem);
+      margin: 0 0 1rem;
+      line-height: 1.2;
+    }
+    .updated {
+      color: var(--muted);
+      font-size: .95rem;
+      margin-bottom: 2rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+      margin: 2rem 0 .75rem;
+    }
+    p { margin: 0 0 1rem; }
+    ul { padding-left: 1.25rem; margin: 0 0 1rem; }
+    li { margin-bottom: .5rem; }
+    a { color: var(--accent); }
+    footer {
+      text-align: center;
+      padding: 2rem 1.5rem 3rem;
+      color: var(--muted);
+      font-size: .9rem;
+      border-top: 1px solid var(--border);
+    }
+    footer a {
+      color: var(--muted);
+      text-decoration: none;
+      margin: 0 .5rem;
+    }
+    footer a:hover { color: var(--fg); }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="logo" href="/">sunwatch</a>
+    <nav>
+      <a href="/">Home</a>
+      <a href="/dashboard">Dashboard</a>
+      <a href="/privacy.html">Privacy</a>
+    </nav>
+  </header>
+
+  <main>
+    <h1>Terms of Service</h1>
+    <p class="updated">Last updated: July 4, 2026</p>
+
+    <p>By using sunwatch, you agree to these terms. If you do not agree, please do not use the service.</p>
+
+    <h2>Service is provided as-is</h2>
+    <p>sunwatch is a side-project uptime monitoring service. It is provided without warranty of any kind. We do not guarantee uptime of the monitoring service itself, the accuracy of every check, or delivery of every alert.</p>
+
+    <h2>Your responsibility</h2>
+    <ul>
+      <li>You are responsible for the URLs you choose to monitor.</li>
+      <li>You are responsible for keeping your webhook endpoints secure and available.</li>
+      <li>You must not use sunwatch to monitor sites or endpoints you do not own or have permission to probe.</li>
+    </ul>
+
+    <h2>Payments</h2>
+    <ul>
+      <li>Paid monitors cost $1 per monitor per month, collected wallet-to-wallet in USDC on the Base network.</li>
+      <li>All payments are non-refundable.</li>
+      <li>If a payment is not received, the associated paid monitor will not activate or will be paused.</li>
+    </ul>
+
+    <h2>Termination</h2>
+    <p>We may stop monitoring any URL that violates these terms or appears to be used for abuse, spam, or illegal activity.</p>
+
+    <h2>Changes to these terms</h2>
+    <p>These terms may change from time to time. The latest version will always be posted at this page with the updated date.</p>
+
+    <h2>Contact</h2>
+    <p>Questions? Open an issue on <a href="https://github.com/ryan-knowone/sunwatch/issues">GitHub</a>.</p>
+  </main>
+
+  <footer>
+    <a href="/">Home</a> •
+    <a href="/privacy.html">Privacy</a> •
+    <a href="/terms.html">Terms</a> •
+    <a href="https://github.com/ryan-knowone/sunwatch">GitHub</a>
+  </footer>
+</body>
+</html>
