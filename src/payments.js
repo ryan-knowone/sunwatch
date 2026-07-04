@@ -45,13 +45,14 @@ function tryActivateMonitor(log, pending) {
   if (!rawAmount) return null;
 
   const humanAmount = formatUnits(rawAmount, 6);
-  if (humanAmount !== '1.00') return null;
+  // Exact $1.00 USDC. viem strips trailing zeros, so accept '1' too.
+  if (humanAmount !== '1' && humanAmount !== '1.00') return null;
 
   const exists = db.prepare('SELECT 1 FROM payments WHERE tx_hash = ?').get(log.transactionHash);
   if (exists) return null;
 
-  // Pick the oldest pending monitor requiring $1.00.
-  const monitor = pending.length > 0 ? pending[0] : null;
+  // Pick the oldest pending monitor requiring $1.00 and consume the slot.
+  const monitor = pending.shift();
   if (!monitor) return null;
 
   const nowSec = Math.floor(Date.now() / 1000);
@@ -111,4 +112,5 @@ module.exports = {
   pollPayments,
   checkPaymentForMonitor,
   startPaymentPoller,
+  tryActivateMonitor,
 };
